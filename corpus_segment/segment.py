@@ -136,7 +136,11 @@ class SegmentCorpus:
 
         # do replacements
         repl_path = self.tok_data_path / 'general' / 'adjustments' / 'rules' / 'replacements.txt'
+        if not repl_path.is_file():
+            repl_path.write_text('')
         for line in repl_path.read_text().split('\n'):
+            if '—' not in line:
+                continue
             orig, repl = line.split('—')
             tokenized = tokenized.replace(orig, repl)
 
@@ -153,9 +157,9 @@ class SegmentCorpus:
         to_add = []
         to_remove = []
         # (xxx {xxx/ xxx} pattern
-        double_adjs_a = re.findall(r'\(.+? \{.+?[\/\+] .+?\}', dump)
+        double_adjs_a = re.findall(r'\([^+/]+? {[^+/]+?[/+] [^}]+?}', dump)
         for d in double_adjs_a:
-            parts = re.split(r'\((.+?) \{(.+?)([\/\+]) (.+?)\}', d)
+            parts = re.split(r'\(([^+/]+?) {([^+/]+?)([/+]) ([^}]+?)}', d)
             a, b, op, c = [p for p in parts if p]
             for el in [a, b, c]:
                 if el.startswith('སྤྱོད་འཇུག'):
@@ -169,9 +173,9 @@ class SegmentCorpus:
             adjusted = f'{a} {b}{c}'
             dump = dump.replace(d, adjusted)
         # {xxx (xxx} xxx/ pattern
-        double_adjs_a = re.findall(r'\{.+? \(.+?\} .+?[\/\+]', dump)
+        double_adjs_a = re.findall(r'{[^+/]+? \([^+/]+?} [^+/]+?[/+]', dump)
         for d in double_adjs_a:
-            parts = re.split(r'\{(.+?) \((.+?)\} (.+?)([\/\+])', d)
+            parts = re.split(r'{([^+/]+?) \(([^+/]+?)} ([^+/]+?)([/+])', d)
             a, b, c, op = [p for p in parts if p]
             for el in [a, b, c]:
                 if el.startswith('སྤྱོད་འཇུག'):
@@ -185,7 +189,7 @@ class SegmentCorpus:
             adjusted = f'{a}{b} {c}'
             dump = dump.replace(d, adjusted)
         # (xxx xxx/ patterns
-        adjs = re.findall(r'(\((([^ ]+ )+?[^ ]+)([\+\/]+?))', dump)
+        adjs = re.findall(r'(\((([^ ]+ )+?[^ ]+)([+/]+?))', dump)
         for a in adjs:
             raw, text, _, op = a
             if text.startswith('སྤྱོད་འཇུག'):
@@ -203,7 +207,7 @@ class SegmentCorpus:
                 text += '་'
             dump = dump.replace(raw, text)
         # xxx/ patterns
-        adjs = re.findall(r'([^ ]+)([\+\/])', dump)
+        adjs = re.findall(r'([^ ]+)([+/])', dump)
         for a in adjs:
             raw = a[0]
             text, op = [l for l in list(a[1:]) if l]

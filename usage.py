@@ -17,6 +17,6 @@ def segment_corpus(in_path, chunks_path, new=False):
 
 
 if __name__ == '__main__':
-    in_path = '../input/laglen_commentaries'
-    chunks_path = '../output/laglen_commentaries.yaml'
+    in_path = 'input'
+    chunks_path = 'output/chunks.yaml'
     segment_corpus(in_path, chunks_path)
